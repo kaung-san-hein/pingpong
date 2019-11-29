@@ -1,38 +1,23 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import axios from "axios";
 import Error from "./common/Error";
-import store from "../store";
-import cookie from "js-cookie";
-class Profile extends Component {
+class UsersEdit extends Component {
   state = {
-    data: { name: this.props.name, email: this.props.email },
+    data: { name: "" },
+    roles: [],
     errors: {}
   };
-  componentDidMount() {
-    let token = cookie.get("token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      axios
-        .post("http://localhost:8080/pingpong-api/public/api/auth/me")
-        .then(res => {
-          store.dispatch({ type: "SET_LOGIN", payload: res.data });
-        });
-    }
-  }
-  handleInput = ({ target: input }) => {
-    const data = { ...this.state.data };
-    data[input.name] = input.value;
-    this.setState({ data });
-  };
-  handleForm = async event => {
-    event.preventDefault();
+  async componentDidMount() {
     try {
-      const { data } = this.state;
-      await axios.put(
-        "http://localhost:8080/pingpong-api/public/api/auth/update",
-        data
+      const { id } = this.props.match.params;
+      const { data } = await axios.get(
+        "http://localhost:8080/pingpong-api/public/api/admin/users/" + id
       );
+      this.setState({
+        data: data[0],
+        roles: data[1]
+      });
+      console.log(data);
     } catch (ex) {
       if (ex.response) {
         const { data: errors } = ex.response;
@@ -41,18 +26,41 @@ class Profile extends Component {
         });
       }
     }
+  }
+  handleInput = ({ target: input }) => {
+    const data = { ...this.state.data };
+    data[input.name] = input.value;
+    this.setState({ data });
+    console.log(data);
+  };
+  handleForm = async event => {
+    event.preventDefault();
+    try {
+      const { id } = this.props.match.params;
+      const { data } = this.state;
+      await axios.put(
+        "http://localhost:8080/pingpong-api/public/api/admin/users/update/" +
+          id,
+        data
+      );
+    } catch (ex) {
+      if (ex.response) {
+        const { errors } = ex.response.data;
+        this.setState({
+          errors
+        });
+      }
+    }
   };
   render() {
-    const { errors } = this.state;
+    const { errors, roles } = this.state;
     return (
       <div className="flex">
         <div className="w-1/3"></div>
         <div className="w-1/3 mt-10 p-4 bg-white">
           <form className="border border-gray-500" onSubmit={this.handleForm}>
             <div className="p-4">
-              <h1 className="text-lg border-b border-gray-500">
-                Edit Your Details
-              </h1>
+              <h1 className="text-lg border-b border-gray-500">Update User</h1>
               <div className="mt-4">
                 <label>Name</label>
                 <input
@@ -63,19 +71,22 @@ class Profile extends Component {
                   value={this.state.data.name}
                   className="mt-2 p-2 bg-gray-200 rounded border border-gray-400 w-full"
                 />
-                <Error error={errors["name"] ? errors["name"] : null} />
+                {/* <Error error={errors["name"] ? errors["name"] : null} /> */}
               </div>
               <div className="mt-4">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Lovely Email"
-                  onChange={this.handleInput}
-                  value={this.state.data.email}
+                <label>Roles</label>
+                <select
+                  name="role[]"
+                  multiple
                   className="mt-2 p-2 bg-gray-200 rounded border border-gray-400 w-full"
-                />
-                <Error error={errors["email"] ? errors["email"] : null} />
+                  onChange={this.handleInput}
+                >
+                  {roles.map(role => (
+                    <option key={role.id} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="mt-4">
                 <input
@@ -92,10 +103,4 @@ class Profile extends Component {
   }
 }
 
-const mapStateToProps = state => {
-  return {
-    name: state.auth.user.name,
-    email: state.auth.user.email
-  };
-};
-export default connect(mapStateToProps)(Profile);
+export default UsersEdit;

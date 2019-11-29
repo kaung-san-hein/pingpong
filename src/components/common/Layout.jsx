@@ -31,13 +31,33 @@ function Layout(props) {
               </Link>
             </React.Fragment>
           ) : (
-            <Link
-              to="/logout"
-              className="m-3 py-1 px-2 bg-purple-700 text-white rounded inline-block"
-              onClick={handleLogout}
-            >
-              Logout
-            </Link>
+            <React.Fragment>
+              <Link
+                to="/users"
+                className="m-3 py-1 px-2 bg-purple-700 text-white rounded inline-block"
+              >
+                Users
+              </Link>
+              <Link
+                to="/roles"
+                className="m-3 py-1 px-2 bg-purple-700 text-white rounded inline-block"
+              >
+                Roles
+              </Link>
+              <Link
+                to="/profile"
+                className="m-3 py-1 px-2 bg-purple-700 text-white rounded inline-block"
+              >
+                Profile
+              </Link>
+              <Link
+                to="/logout"
+                className="m-3 py-1 px-2 bg-purple-700 text-white rounded inline-block"
+                onClick={handleLogout}
+              >
+                Logout
+              </Link>
+            </React.Fragment>
           )}
         </div>
       </nav>
